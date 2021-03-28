@@ -13,7 +13,7 @@ const users = [];
 function checksExistsUserAccount(request, response, next) {
     const { username } = request.headers;
 
-    const user = users.find(user => user.name === username);
+    const user = users.find(user => user.username === username);
 
     if (!user) {
       return response.status(404).json({ error: 'User is not found'});
@@ -31,18 +31,48 @@ function checksCreateTodosUserAvailability(request, response, next) {
   }else if(user.pro === true){
     return next();
   }
-
-
-
-
+  return response.status(403).json({ error: 'Users without a Pro plan can only have 10 registered' });
 }
 
 function checksTodoExists(request, response, next) {
-  // Complete aqui
+  const { username } = request.headers;
+  const { id: todoId } = request.params;
+
+  const user = users.find(user => user.username === username);
+
+  if (!user) {
+    return response.status(404).json({ error: 'User is not found!' });
+  }
+
+  if (!validate(todoId)) {
+    return response.status(400).json({ error: 'Not validated!'});
+  }
+
+  const todo = user.todos.find(todo => todo.id === todoId);
+
+  if (!todo) {
+    return response.status(404).json({ error: 'Todo is not found!'})
+  }
+
+  request.user = user;
+  request.todo = todo;
+
+  return next();
+  
 }
 
 function findUserById(request, response, next) {
-  // Complete aqui
+  const {id: userId} = request.params;
+
+  const user = users.find(user => user.id === userId);
+
+  if (!user) {
+    return response.status(404).json({ error: 'User not found'});
+  }
+
+  request.user = user;
+
+  return next();
 }
 // End middlewares
 
